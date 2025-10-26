@@ -1,0 +1,14 @@
+wandb==0.19.1
+accelerate==1.2.0
+evaluate==0.4.3
+importlib-resources==6.4.0
+jaraco.collections==5.1.0
+librosa==0.10.2.post1
+pip-chill==1.0.3
+tomli==2.0.1
+torchaudio==2.5.1
+torchvision==0.20.1
+transformers==4.47.0
+peft==0.15.2
+datasets<3.0.0
+tiktoken
