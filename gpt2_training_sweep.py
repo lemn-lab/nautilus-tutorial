@@ -198,6 +198,7 @@ if __name__ == "__main__":
 
     # ---------------- W&B Sweep ----------------
     sweep_config = {
+        "name": "gpt2-shakespeare",
         "method": "bayes",
         "metric": {"name": "eval_loss", "goal": "minimize"},
         "parameters": {
