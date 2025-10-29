@@ -89,7 +89,7 @@ def load_and_tokenize_dataset(text_files, tokenizer_path, block_size=128, test_s
     def tokenize_function(examples):
         return tokenizer(examples["text"])
 
-    tokenized = ds.map(tokenize_function, batched=True, remove_columns=["text"]) # batch size is given here implicitly 
+    tokenized = ds.map(tokenize_function, batched=True, remove_columns=["text"]) 
     # Concatenate and chunk into blocks of block_size
     def group_texts(examples):
         # concatenates all input_ids for a batch and split into chunks
@@ -103,7 +103,7 @@ def load_and_tokenize_dataset(text_files, tokenizer_path, block_size=128, test_s
         attention_masks = [[1] * block_size for _ in input_ids]
         return {"input_ids": input_ids, "attention_mask": attention_masks}
 
-    lm_datasets = tokenized.map(group_texts, batched=True, remove_columns=tokenized["train"].column_names)
+    lm_datasets = tokenized.map(group_texts, batched=True, remove_columns=tokenized["train"].column_names) # -> # batch size is given here implicitly. How many lines are taken at once is the batch size here. its 1000
     split = tokenized["train"].train_test_split(test_size=test_size, seed=seed)
     lm_datasets = DatasetDict({"train": split["train"], "test": split["test"]})
     logger.info(f"Tokenized and grouped dataset size: {len(lm_datasets)} blocks")
