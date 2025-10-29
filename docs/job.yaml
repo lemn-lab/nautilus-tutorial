@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-job-{YOUR_NAME}
+spec:
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: perl
+        command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+        resources:
+           limits:
+             memory: 200Mi
+             cpu: "1"
+           requests:
+             memory: 50Mi
+             cpu: 50m
+      restartPolicy: Never
+  backoffLimit: 4

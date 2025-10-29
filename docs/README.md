@@ -36,23 +36,14 @@ For more information, NRP Nautilus's official documentation is available at: [Ge
     apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
-    name: pvc-{YOUR_NAME}
+     name: pvc-{YOUR_NAME}
     spec:
-    affinity:
-        nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-            - key: topology.kubernetes.io/region
-                operator: In
-                values:
-                - us-west # assuming we are in CA
-    storageClassName: rook-ceph-block # an RBD filesystem at west
-    accessModes:
-    - ReadWriteOnce
-    resources:
+     storageClassName: rook-ceph-block # an RBD filesystem at west
+     accessModes:
+     - ReadWriteOnce
+     resources:
         requests:
-        storage: 1Gi
+         storage: 1Gi
     ```
 2. Run `kubectl apply -f pvc.yaml` in the command line.
 3. Run `kubectl get pvc` to check the status of your pvc. `Bound` means success.
@@ -63,27 +54,26 @@ For more information, NRP Nautilus's official documentation is available at: [Ge
     apiVersion: v1
     kind: Pod
     metadata:
-    name: test-pod-{YOUR_NAME}
-    spec:
-    containers:
-    - name: mypod
-        image: ubuntu
-        command: ["sh", "-c", "echo 'Im a new pod' && sleep infinity"]
-        resources:
-        limits:
-            memory: 100Mi
-            cpu: 100m
-        requests:
-            memory: 100Mi
-            cpu: 100m
-        volumeMounts: #optional, for mounting PVC
-            - mountPath: /mnt/pvc
-            name: storage-volume
-    volumes:
-        - name: storage-volume
-        persistentVolumeClaim:
-            claimName: pvc-{YOUR_NAME}
-
+      name: test-pod-{YOUR_NAME}
+      spec:
+        containers:
+          - name: mypod
+            image: ubuntu
+            command: ["sh", "-c", "echo 'Im a new pod' && sleep infinity"]
+            resources:
+              limits:
+                  memory: 100Mi
+                  cpu: 100m
+              requests:
+                  memory: 100Mi
+                  cpu: 100m
+              volumeMounts: #optional, for mounting PVC
+                  - mountPath: /mnt/pvc
+                    name: storage-volume
+        volumes:
+            - name: storage-volume
+              persistentVolumeClaim:
+                claimName: pvc-{YOUR_NAME}
     ```
 2. Run `kubectl create -f pod.yaml` in the command line.
 3. Run `kubectl describe pod test-pod-{YOUR_NAME}` to get the status of the Pod.
@@ -99,23 +89,23 @@ For more information, NRP Nautilus's official documentation is available at: [Ge
     apiVersion: batch/v1
     kind: Job
     metadata:
-    name: test-job-{YOUR_NAME}
+      name: test-job-{YOUR_NAME}
     spec:
-    template:
+      template:
         spec:
-        containers:
-        - name: myjob
+          containers:
+          - name: pi
             image: perl
             command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
             resources:
-            limits:
-                memory: 200Mi
-                cpu: 1
-            requests:
-                memory: 50Mi
-                cpu: 50m
-        restartPolicy: Never
-    backoffLimit: 4
+               limits:
+                 memory: 200Mi
+                 cpu: "1"
+               requests:
+                 memory: 50Mi
+                 cpu: 50m
+          restartPolicy: Never
+      backoffLimit: 4
     ```
 2. Run `kubectl create -f job.yaml` in the command line.
 3. Run `kubectl describe job test-job-{YOUR_NAME}` to get the status of the Job.
