@@ -91,7 +91,7 @@ def load_and_tokenize_dataset(text_files, tokenizer_path, block_size=128, test_s
     def tokenize_function(examples):
         return tokenizer(examples["text"])
 
-    tokenized = ds.map(tokenize_function, batched=True, remove_columns=["text"]) # batch size is given here implicitly 
+    tokenized = ds.map(tokenize_function, batched=True, remove_columns=["text"]) # -> batch size is given here implicitly, its 1000 by default 
     # Concatenate and chunk into blocks of block_size
     def group_texts(examples):
         # concatenates all input_ids for a batch and split into chunks
@@ -130,6 +130,7 @@ def make_small_gpt2_config(vocab_size, n_embd=256, n_layer=6, n_head=8, max_posi
 
 # ---------------- Training Function for Sweep ----------------
 def train_with_sweep(config=None):
+
     wandb.init(config=config)
     config = wandb.config
 
@@ -200,7 +201,7 @@ if __name__ == "__main__":
     sweep_config = {
         "name": "gpt2-shakespeare",
         "method": "bayes",
-        "metric": {"name": "eval_loss", "goal": "minimize"},
+        "metric": {"name": "eval/loss", "goal": "minimize"},
         "parameters": {
             "learning_rate": {"min": 1e-5, "max": 5e-4},
             "per_device_train_batch_size": {"values": [4, 8, 16]},
