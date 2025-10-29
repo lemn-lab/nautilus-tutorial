@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tutorial-pod-ddp
+spec:
+  securityContext:
+    fsGroup: 100
+  containers:
+  - name: gpu-container
+    image: ubuntu:22.04
+    command: ["/bin/bash","-c"]
+    args: ["apt-get update; apt-get install wget -y;
+        cd data-many;
+        mkdir -p ~/miniconda3; wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh;
+        bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3; rm ~/miniconda3/miniconda.sh; source ~/miniconda3/bin/activate;
+        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main; conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r;
+        conda create --name gpt2 python=3.9 -y; conda activate gpt2;
+        pip install -r requirements.txt;
+        sleep infinity"]
+    volumeMounts:
+    - mountPath: /data
+      name: data-large
+    - mountPath: /small-data
+      name: data
+    - mountPath: /data-many
+      name: data-large-many
+    - mountPath: /dev/shm
+      name: dshm
+    - mountPath: /tmp
+      name: ephemeral-storage-volume
+    env:
+    - name: NCCL_DEBUG
+      value: "INFO"
+    - name: NCCL_TIMEOUT
+      value: "7200"
+    - name: NCCL_P2P_DISABLE
+      value: "1"
+    - name: NCCL_IB_DISABLE
+      value: "1"
+    - name: NCCL_SOCKET_IFNAME
+      value: "eth0"
+    - name: NCCL_SOCKET_NTHREADS
+      value: "4"
+    - name: NCCL_NSOCKS_PERTHREAD
+      value: "4"
+    - name: NCCL_MIN_NCHANNELS
+      value: "4"
+    - name: NCCL_MAX_NCHANNELS
+      value: "16"
+    - name: NCCL_TREE_THRESHOLD
+      value: "0"
+    - name: NCCL_ALGO
+      value: "Ring"
+    - name: NCCL_PROTO
+      value: "Simple"
+    - name: NCCL_BUFFSIZE
+      value: "4194304"
+    - name: NCCL_NTHREADS
+      value: "8"
+    - name: NCCL_BLOCKING_WAIT
+      value: "1"
+    - name: NCCL_ASYNC_ERROR_HANDLING
+      value: "1"
+    - name: TORCH_DISTRIBUTED_DEBUG
+      value: "DETAIL"
+    resources:
+      limits:
+        nvidia.com/gpu: "2"
+        memory: "30G"
+        cpu: "16"
+  restartPolicy: Never
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: data
+  - name: data-large
+    persistentVolumeClaim:
+      claimName: data-large
+  - name: data-large-many
+    persistentVolumeClaim:
+      claimName: data-large-many
+  - name: dshm
+    emptyDir:
+      medium: Memory
+      sizeLimit: "16Gi"
+  - name: ephemeral-storage-volume
+    emptyDir: {}
