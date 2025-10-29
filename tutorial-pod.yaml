@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tutorial-pod
+spec:
+  securityContext:
+    fsGroup: 100
+  containers:
+  - name: gpu-container
+    image: ubuntu:22.04
+    command: ["/bin/bash","-c"]
+    args: ["apt-get update; apt-get install wget -y;
+            cd data-many;
+            mkdir -p ~/miniconda3; wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh;
+            bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3; rm ~/miniconda3/miniconda.sh; source ~/miniconda3/bin/activate;
+            conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main; conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r;
+            conda create --name gpt2 python=3.9 -y; conda activate gpt2;
+            pip install -r requirements.txt;
+            sleep infinity"]
+    volumeMounts:
+    - mountPath: /data
+      name: data-large
+    - mountPath: /small-data
+      name: data
+    - mountPath: /data-many
+      name: data-large-many
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+        memory: "8G"
+        cpu: "4"
+  restartPolicy: Never
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: data
+    - name: data-large
+      persistentVolumeClaim:
+        claimName: data-large
+    - name: data-large-many
+      persistentVolumeClaim:
+        claimName: data-large-many
